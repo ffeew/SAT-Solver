@@ -149,8 +149,6 @@ def visit_node(implication_graph, visited, node, stack, scc):
             visit_node(implication_graph, visited, neighbour, stack, scc) #recursively go down the trail.
         stack.append(node)
         scc.append(node)
-        print('stack')
-        print(stack)
     return visited
 
 #reverse the directions of all the edges  
@@ -186,9 +184,11 @@ def find_SCCs(implication_graph):
 def find_contradiction(sccs):
     print("SCCs")
     print(sccs)
+    print()
     for scc in sccs:
         print("SCC")
         print(scc)
+        print()
         for literal in scc: #scc --> group of nodes
             for other_literal in scc[scc.index(literal):]:
                 if other_literal.id == -literal.id:
@@ -200,7 +200,7 @@ def find_solution(sccs):
     solution = []
     for scc in sccs:
         for literal in scc:
-            if (abs(literal.id) not in solution) and (literal.id not in solution):
+            if (abs(literal.id) not in solution) and (literal.id not in solution) and (-literal.id not in solution):
                 solution.append(literal.id)
     return solution
 
@@ -212,9 +212,6 @@ def solver():
     file = input("Input the file name or file path: " )
     cnf = loadCnfFile(file)
     dictfinal = listToCnf(cnf)
-    print(cnf)
-    print(dictfinal)
-    # use child class implementing dfs that inherits the Graph class
     graph = Graph()
     for key in dictfinal:
         for val in dictfinal[key]:
