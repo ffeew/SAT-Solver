@@ -228,12 +228,11 @@ def solver():
     sccs = find_SCCs(graph)[0]
 
     if not find_contradiction(sccs):
-        print("SATISFIABLE")
-
+        print("2-SAT Problem is Satisfiable")
         solution = find_solution(sccs)
         print(solution)
     else:
-        print("UNSATISFIABLE")
+        print("2-SAT Problem is Unsatisfiable")
         
 
 solver()
