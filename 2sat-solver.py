@@ -1,47 +1,4 @@
 #%%
-
-# reads the cnf file, cleans it and returns a list containing nested sub lists
-# the sublists contains the literals
-def loadCnfFile(fileName):
-    cnf=[]
-    cnfFile = open(fileName, 'r')
-    for line in cnfFile:
-        if line[0]!="c" and line[0]!="p":
-            l=line.split("0")[0].strip().split(" ")
-            m=[]
-            for k in l:
-                m.append(int(k))
-            cnf.append(m)
-    cnfFile.close()
-    return cnf
-
-# converts the list of clauses with their literals into an implication graph
-def listToCnf(cnf):
-    dictOut = dict()
-    
-    # iterate through the list cnf
-    for clause in cnf:
-        
-        # check if literal in 0th index exists as a key in the dictionary
-        # if the key exists, add edge
-        if int(clause[0])*-1 in dictOut.keys():
-            dictOut[int(clause[0])*-1].append(clause[1])
-        
-        # if the key does not exist, create a new list to store the literals
-        else:
-            dictOut[int(clause[0])*-1] = []
-            dictOut[int(clause[0])*-1].append(clause[1])
-        
-        # repeat above for the 2nd literal
-        if int(clause[1])*-1 in dictOut.keys():
-            dictOut[int(clause[1])*-1].append(clause[0])
-        else:
-            dictOut[int(clause[1])*-1] = []
-            dictOut[int(clause[1])*-1].append(clause[0])
-    
-    # return the Python dictionary representing the vertexes and edges of a dfs graph         
-    return dictOut
-
 class Vertex:
     def __init__(self, id=""):
         self.id = id 
@@ -61,7 +18,7 @@ class Vertex:
         return self.id == other.id 
     
     def __lt__(self, other):
-        return self.id < other.id
+        return int(self.id) < int(other.id)
     
     def __hash__(self):
         # print("hash method is called ", self.id)
@@ -70,7 +27,7 @@ class Vertex:
     def __repr__(self):
         # print(self.id)
         # print("Vertex {vert.id} is connected to: ".format(vert=self) + ", ".join(str(x.id) for x in self.get_neighbours()))
-        return repr(self.id)
+        return repr("Vertex: " + str(self.id))
 
 class Graph:
     def __init__(self):
@@ -131,67 +88,144 @@ class Graph:
     def num_vertices(self):
         return len(self.vertices)
 
+# reads the cnf file, cleans it and returns a list containing nested sub lists
+# the sublists contains the literals
+def loadCnfFile(fileName):
+    cnf=[]
+    cnfFile = open(fileName, 'r')
+    for line in cnfFile:
+        if line[0]!="c" and line[0]!="p":
+            l = line.split(" 0")[0].strip().split(" ")
+            # print(l)
+            m=[]
+            for k in l:
+                if k != "" and k != "0":
+                    # print(k)
+                    m.append(int(k))
+                    # print(m)
+            cnf.append(m)
+    cnfFile.close()
+    print(cnf)
+    return cnf
+
+# converts the list of clauses with their literals into an implication graph
+def listToCnf(cnf):
+    dictOut = dict()
+    
+    # iterate through the list cnf
+    for clause in cnf:
+        
+        # check if literal in 0th index exists as a key in the dictionary
+        # if the key exists, add edge
+        if int(clause[0])*-1 in dictOut.keys():
+            dictOut[int(clause[0])*-1].append(int(clause[1]))
+        
+        # if the key does not exist, create a new list to store the literals
+        else:
+            dictOut[int(clause[0])*-1] = []
+            dictOut[int(clause[0])*-1].append(int(clause[1]))
+        
+        # repeat above for the 2nd literal
+        if int(clause[1])*-1 in dictOut.keys():
+            dictOut[int(clause[1])*-1].append(int(clause[0]))
+        else:
+            dictOut[int(clause[1])*-1] = []
+            dictOut[int(clause[1])*-1].append(int(clause[0]))
+    
+    # return the Python dictionary representing the vertexes and edges of a dfs graph
+    print(dictOut)         
+    return dictOut
+# C:\Users\issac\Desktop\SUTD\School Year\Year 2\Term 4\2D\50.004\2SAT\Test2.cnf
 # function used to find SCCs
 def DFS(implication_graph, visited, stack, scc): #add to the stack and scc lists passed in
-    for node in implication_graph.vertices.values():
-        if node not in visited:
-            visit_node(implication_graph, visited, node, stack, scc)
+    print("Depth First Search is called \n")
+    for vert in implication_graph.vertices.values():
+        if vert not in visited:
+            visit_vert(implication_graph, visited, vert, stack, scc)
 
+# DFS helper function that visits all the reachable vertices, traverses a DFS tree
+def visit_vert(implication_graph, visited, vert, stack, scc):
+    # print("{} is being visited.".format(vert.id))
 
-# DFS helper function that visits all the reachable nodes, traverses a DFS tree
-def visit_node(implication_graph, visited, node, stack, scc):
-    if node not in visited:
-        visited.append(node)
-        for neighbour in node.get_neighbours(): #retrieve the neighbours of the node
-            visit_node(implication_graph, visited, neighbour, stack, scc) #recursively go down the trail.
-        stack.append(node)
-        scc.append(node)
+    if vert not in visited:
+        visited.append(vert)
+        print("Neighbours of {}:".format(vert.id),vert.get_neighbours())
+        for neighbour in vert.get_neighbours(): #retrieve the neighbours of the vert
+            if neighbour not in visited:
+                visit_vert(implication_graph, visited, neighbour, stack, scc) #recursively go down the trail.
+        stack.append(vert)
+        scc.append(vert)
     return visited
 
 #reverse the directions of all the edges  
 def reverse_graph(implication_graph): 
-    t_graph = Graph()
-    # for each node in graph
-    for node in implication_graph.vertices.values():
-        # for each neighbour node of a single node
-        for neighbour in node.get_neighbours():
-            t_graph.add_edge(neighbour, node)
-    return t_graph
+    transpose_graph = Graph()
+    # for each vert in graph
+    for key, vert in implication_graph.vertices.items():
+        # for each neighbour vert of a single vert
+        for neighbour in vert.get_neighbours():
+            transpose_graph.add_edge(neighbour, vert)
+
+    print("Transpose graph vertices:", transpose_graph.vertices)
+
+    for vert in transpose_graph.vertices.values():
+        print(vert.get_neighbours())
+    return transpose_graph
 
 #find the SCCs by running DFS, to get the topological order, denoted by the reverse of stack.
 def find_SCCs(implication_graph):
+    print("Find SCCs is called \n")
     stack = []
     sccs = [] #nested list of SCCs
+    scc = []
+    visited = []
     #get the topological order of the implication graph
-    DFS(implication_graph, [], stack, [])
+    DFS(implication_graph, visited, stack, scc)
+
     #reverse the graph to get the SCCs denoted by the DFS trees
-    t_g = reverse_graph(implication_graph)
-    
+    transpose_graph = reverse_graph(implication_graph)
+
     visited = []
     while len(stack) != 0:
-        node = stack.pop() #get the lowest topological order node to search for a SCC
-        if node not in visited:
+        vert = stack.pop() #get the lowest topological order vert to search for a SCC
+        # print("Vertex popped from stack:", vert)
+        if vert not in visited:
             scc = []
-            # scc.append(node)
-            visit_node(t_g, visited, node, [], scc) #add all strongly connect nodes to the DFS-tree named SCC
+            visit_vert(transpose_graph, visited, vert, [], scc) #add all strongly connect vertices to the DFS-tree named SCC
+            print("Checking SCC from visiting:", scc)
             if len(scc) != 0:
                 sccs.append(scc) #add the DFS tree to the list of DFS trees called SCCs
 
+    # while len(stack) != 0:
+    #     vert = stack.pop()
+    #     scc = []
+    #     visit_vert(transpose_graph, [], vert,  [], scc)
+
+    #     for vert in scc:
+    #         if vert in stack:
+    #             stack.remove(vert)
+        
+    #     sccs.append(scc)
+
+    print("Check SCCs from find SCCs:", sccs)
+    print("Check stack from find SCCs:", stack)
     return sccs, stack
 
 def find_contradiction(sccs):
-    print("SCCs")
-    print(sccs, "\n")
+    print("Find Contradiction is called")
+    print("SCCs:", sccs, "\n")
+
     for scc in sccs:
-        print("SCC")
-        print(scc, "\n")
-        for literal in scc: #scc --> group of nodes
+        print("SCC:",scc, "\n")
+
+        for literal in scc: #scc --> group of vertices
             for other_literal in scc[scc.index(literal):]:
-                if other_literal.id == -literal.id:
+                if int(other_literal.id) == -1*int(literal.id):
                     return True
     return False
 
 def find_solution(sccs):
+    print("Find Solution is called")
     #go down the SCCs in reverse topological order
     solution = []
     for scc in sccs:
@@ -215,24 +249,35 @@ def find_solution(sccs):
     return " ".join(result)
 
 def solver():
-    print("Checking if the following 2-CNF is Satisfiable in linear time ")
+    print("Checking if the following 2-CNF is Satisfiable in linear time.")
+
     # input the file name or file path
-    file = input("Input the file name or file path: " )
+    print("Stage 1 \n")
+    # file = input("Input the file name or file path: " )
+    file = r"C:\Users\issac\Desktop\SUTD\School Year\Year 2\Term 4\2D\50.004\2SAT\Test2.cnf"
     cnf = loadCnfFile(file)
+
+    print("Stage 2 \n")
     dictfinal = listToCnf(cnf)
+
+    print("Stage 3 \n")
     graph = Graph()
     for key in dictfinal:
         for val in dictfinal[key]:
             graph.add_edge(key, val, weight=0)
+    
+    print("Vertices in a graph:", graph.vertices)
 
+    print("Stage 4 \n")
     sccs = find_SCCs(graph)[0]
 
+    print("Stage 5 \n")
     if not find_contradiction(sccs):
-        print("2-SAT Problem is Satisfiable")
+        print("SATISFIABLE")
         solution = find_solution(sccs)
         print(solution)
     else:
-        print("2-SAT Problem is Unsatisfiable")
+        print("UNSATISFIABLE")
         
 
 solver()
