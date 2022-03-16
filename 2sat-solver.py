@@ -42,7 +42,6 @@ def listToCnf(cnf):
     # return the Python dictionary representing the vertexes and edges of a dfs graph         
     return dictOut
 
-#%%
 class Vertex:
     def __init__(self, id=""):
         self.id = id 
@@ -50,14 +49,7 @@ class Vertex:
     
     def add_neighbour(self, nbr_vertex, weight=0):
         self.neighbours[nbr_vertex] = weight
-        pass
     
-    def __repr__(self):
-        return repr(self.id)
-
-    def get_neighbours(self):
-        return list(self.neighbours.keys())
-
     def get_neighbours(self):
         return list(self.neighbours.keys())
     
@@ -65,28 +57,32 @@ class Vertex:
         return self.neighbours.get(neighbour, None)
     
     def __eq__(self, other):
+        # print("equal method is called")
         return self.id == other.id 
     
     def __lt__(self, other):
-        return self.id < other.id 
+        return self.id < other.id
     
     def __hash__(self):
-        return hash(self.id) 
+        # print("hash method is called ", self.id)
+        return hash(self.id)
 
-#%%
+    def __repr__(self):
+        # print(self.id)
+        # print("Vertex {vert.id} is connected to: ".format(vert=self) + ", ".join(str(x.id) for x in self.get_neighbours()))
+        return repr(self.id)
+
 class Graph:
     def __init__(self):
         self.vertices = {} # Dictionary, key = String of Vertex id, value is the Vertex instance
-        # to get the neighbours of a vertex in this graph: self.vertices[vid].neighbours 
          
     def _create_vertex(self, id):
         return Vertex(id)
     
     def add_vertex(self, id):
-        v = self._create_vertex(id)
-        self.vertices[v.id] = v 
-        pass
-    
+        vert = self._create_vertex(id)
+        self.vertices[vert.id] = vert # Make the id of the object instance as the key instead of the string!
+
     # return the instance of the requested id 
     def get_vertex(self, id):
         return self.vertices.get(id, None)
@@ -105,6 +101,7 @@ class Graph:
         
         # obtain the instance of Vertex with id end_v
         end_vertex = self.vertices[end_v]
+
         start_vertex.add_neighbour(end_vertex, weight)
     
     # @args: id is the String of vertex in question 
@@ -118,7 +115,8 @@ class Graph:
                 # neighbouring_vertex is a vertex instance, so extract its id
                 neighbours_id.append(neighbouring_vertex.id)
             return neighbours_id
-        return None                 
+        else:
+            return None                 
     
     # returns True or False if given val (String representing Vertex id) is in the Graph
     def __contains__(self, v_id):
@@ -133,8 +131,7 @@ class Graph:
     def num_vertices(self):
         return len(self.vertices)
 
-# %%
-#function used to find SCCs
+# function used to find SCCs
 def DFS(implication_graph, visited, stack, scc): #add to the stack and scc lists passed in
     for node in implication_graph.vertices.values():
         if node not in visited:
@@ -175,6 +172,7 @@ def find_SCCs(implication_graph):
         node = stack.pop() #get the lowest topological order node to search for a SCC
         if node not in visited:
             scc = []
+            scc.append(node)
             visit_node(t_g, visited, node, [], scc) #add all strongly connect nodes to the DFS-tree named SCC
             if len(scc) != 0:
                 sccs.append(scc) #add the DFS tree to the list of DFS trees called SCCs
@@ -182,12 +180,10 @@ def find_SCCs(implication_graph):
 
 def find_contradiction(sccs):
     print("SCCs")
-    print(sccs)
-    print()
+    print(sccs, "\n")
     for scc in sccs:
         print("SCC")
-        print(scc)
-        print()
+        print(scc, "\n")
         for literal in scc: #scc --> group of nodes
             for other_literal in scc[scc.index(literal):]:
                 if other_literal.id == -literal.id:
@@ -201,9 +197,21 @@ def find_solution(sccs):
         for literal in scc:
             if (abs(literal.id) not in solution) and (literal.id not in solution) and (-literal.id not in solution):
                 solution.append(literal.id)
-    return solution
+    
+    absolute = lambda x: abs(x)
+    solution.sort(key=absolute)
+    print(solution)
 
-
+    result = [-1]*len(solution)
+    
+    for val in solution:
+        ind = abs(val) - 1
+        if val > 0:
+            result[ind] = "1"
+        else:
+            result[ind] = "0"
+    
+    return " ".join(result)
 
 def solver():
     print("Checking if the following 2-CNF is Satisfiable in linear time ")
@@ -219,11 +227,13 @@ def solver():
     sccs = find_SCCs(graph)[0]
 
     if not find_contradiction(sccs):
-        print("2-CNF Satisfiable")
+        print("SATISFIABLE")
+
         solution = find_solution(sccs)
         print(solution)
     else:
-        print("2-CNF not Satisfiable")
+        print("UNSATISFIABLE")
         
 
 solver()
+# %%
