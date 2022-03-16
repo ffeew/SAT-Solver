@@ -194,7 +194,8 @@ def find_contradiction(sccs):
 def find_solution(sccs):
     #go down the SCCs in reverse topological order
     solution = []
-    for scc in sccs:
+    for i in range(len(sccs)-1, 0, -1):
+        scc = sccs[i]
         for literal in scc:
             if (abs(literal.id) not in solution) and (literal.id not in solution) and (-literal.id not in solution):
                 solution.append(literal.id)
