@@ -15,10 +15,10 @@ class Vertex:
     
     def __eq__(self, other):
         # print("equal method is called")
-        return self.id == other.id 
+        return self.id == other.id
     
     def __lt__(self, other):
-        return int(self.id) < int(other.id)
+        return self.id < other.id
     
     def __hash__(self):
         # print("hash method is called ", self.id)
@@ -101,7 +101,7 @@ def loadCnfFile(fileName):
             for k in l:
                 if k != "" and k != "0":
                     # print(k)
-                    m.append(int(k))
+                    m.append(k)
                     # print(m)
             cnf.append(m)
     cnfFile.close()
@@ -118,19 +118,19 @@ def listToCnf(cnf):
         # check if literal in 0th index exists as a key in the dictionary
         # if the key exists, add edge
         if int(clause[0])*-1 in dictOut.keys():
-            dictOut[int(clause[0])*-1].append(int(clause[1]))
+            dictOut[int(clause[0])*-1].append(clause[1])
         
         # if the key does not exist, create a new list to store the literals
         else:
             dictOut[int(clause[0])*-1] = []
-            dictOut[int(clause[0])*-1].append(int(clause[1]))
+            dictOut[int(clause[0])*-1].append(clause[1])
         
         # repeat above for the 2nd literal
         if int(clause[1])*-1 in dictOut.keys():
-            dictOut[int(clause[1])*-1].append(int(clause[0]))
+            dictOut[int(clause[1])*-1].append(clause[0])
         else:
             dictOut[int(clause[1])*-1] = []
-            dictOut[int(clause[1])*-1].append(int(clause[0]))
+            dictOut[int(clause[1])*-1].append(clause[0])
     
     # return the Python dictionary representing the vertexes and edges of a dfs graph
     print(dictOut)         
@@ -196,20 +196,10 @@ def find_SCCs(implication_graph):
             if len(scc) != 0:
                 sccs.append(scc) #add the DFS tree to the list of DFS trees called SCCs
 
-    # while len(stack) != 0:
-    #     vert = stack.pop()
-    #     scc = []
-    #     visit_vert(transpose_graph, [], vert,  [], scc)
-
-    #     for vert in scc:
-    #         if vert in stack:
-    #             stack.remove(vert)
-        
-    #     sccs.append(scc)
-
     print("Check SCCs from find SCCs:", sccs)
     print("Check stack from find SCCs:", stack)
     return sccs, stack
+
 
 def find_contradiction(sccs):
     print("Find Contradiction is called")
@@ -220,7 +210,7 @@ def find_contradiction(sccs):
 
         for literal in scc: #scc --> group of vertices
             for other_literal in scc[scc.index(literal):]:
-                if int(other_literal.id) == -1*int(literal.id):
+                if other_literal.id == -1*literal.id:
                     return True
     return False
 
@@ -228,10 +218,12 @@ def find_solution(sccs):
     print("Find Solution is called")
     #go down the SCCs in reverse topological order
     solution = []
-    for scc in sccs:
+    for i in range(len(sccs)-1, 0, -1):
+        scc = sccs[i]
         for literal in scc:
-            if (abs(literal.id) not in solution) and (literal.id not in solution) and (-literal.id not in solution):
-                solution.append(literal.id)
+            key = int(literal.id)
+            if (key not in solution) and (-1*key not in solution):
+                solution.append(key)
     
     absolute = lambda x: abs(x)
     solution.sort(key=absolute)
@@ -253,8 +245,8 @@ def solver():
 
     # input the file name or file path
     print("Stage 1 \n")
-    # file = input("Input the file name or file path: " )
-    file = r"C:\Users\issac\Desktop\SUTD\School Year\Year 2\Term 4\2D\50.004\2SAT\Test2.cnf"
+    file = input("Input the file name or file path: " )
+    # file = r"C:\Users\issac\Desktop\SUTD\School Year\Year 2\Term 4\2D\50.004\2SAT\Test2.cnf"
     cnf = loadCnfFile(file)
 
     print("Stage 2 \n")
