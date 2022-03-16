@@ -105,7 +105,7 @@ def loadCnfFile(fileName):
                     # print(m)
             cnf.append(m)
     cnfFile.close()
-    print(cnf)
+    # print(cnf)
     return cnf
 
 # converts the list of clauses with their literals into an implication graph
@@ -118,27 +118,27 @@ def listToCnf(cnf):
         # check if literal in 0th index exists as a key in the dictionary
         # if the key exists, add edge
         if int(clause[0])*-1 in dictOut.keys():
-            dictOut[int(clause[0])*-1].append(clause[1])
+            dictOut[int(clause[0])*-1].append(int(clause[1]))
         
         # if the key does not exist, create a new list to store the literals
         else:
             dictOut[int(clause[0])*-1] = []
-            dictOut[int(clause[0])*-1].append(clause[1])
+            dictOut[int(clause[0])*-1].append(int(clause[1]))
         
         # repeat above for the 2nd literal
         if int(clause[1])*-1 in dictOut.keys():
-            dictOut[int(clause[1])*-1].append(clause[0])
+            dictOut[int(clause[1])*-1].append(int(clause[0]))
         else:
             dictOut[int(clause[1])*-1] = []
-            dictOut[int(clause[1])*-1].append(clause[0])
+            dictOut[int(clause[1])*-1].append(int(clause[0]))
     
     # return the Python dictionary representing the vertexes and edges of a dfs graph
-    print(dictOut)         
+    # print(dictOut)         
     return dictOut
 # C:\Users\issac\Desktop\SUTD\School Year\Year 2\Term 4\2D\50.004\2SAT\Test2.cnf
 # function used to find SCCs
 def DFS(implication_graph, visited, stack, scc): #add to the stack and scc lists passed in
-    print("Depth First Search is called \n")
+    # print("Depth First Search is called \n")
     for vert in implication_graph.vertices.values():
         if vert not in visited:
             visit_vert(implication_graph, visited, vert, stack, scc)
@@ -154,6 +154,7 @@ def visit_vert(implication_graph, visited, vert, stack, scc):
             if neighbour not in visited:
                 visit_vert(implication_graph, visited, neighbour, stack, scc) #recursively go down the trail.
         stack.append(vert)
+        print("Stack of DFS:", stack)
         scc.append(vert)
     return visited
 
@@ -164,12 +165,12 @@ def reverse_graph(implication_graph):
     for key, vert in implication_graph.vertices.items():
         # for each neighbour vert of a single vert
         for neighbour in vert.get_neighbours():
-            transpose_graph.add_edge(neighbour, vert)
+            transpose_graph.add_edge(neighbour.id, vert.id)
 
-    print("Transpose graph vertices:", transpose_graph.vertices)
+    # print("Transpose graph vertices:", transpose_graph.vertices)
 
-    for vert in transpose_graph.vertices.values():
-        print(vert.get_neighbours())
+    # for vert in transpose_graph.vertices.values():
+    #     print("Transpose graph - {}:".format(vert), vert.get_neighbours())
     return transpose_graph
 
 #find the SCCs by running DFS, to get the topological order, denoted by the reverse of stack.
@@ -185,9 +186,13 @@ def find_SCCs(implication_graph):
     #reverse the graph to get the SCCs denoted by the DFS trees
     transpose_graph = reverse_graph(implication_graph)
 
+    print("Stack for reverse graph traversal:", stack)
+
     visited = []
     while len(stack) != 0:
-        vert = stack.pop() #get the lowest topological order vert to search for a SCC
+        vert = stack.pop(0) #get the lowest topological order vert to search for a SCC
+        print("Nodes remaining:", stack)
+        print("Visited nodes:", visited)
         # print("Vertex popped from stack:", vert)
         if vert not in visited:
             scc = []
@@ -197,7 +202,6 @@ def find_SCCs(implication_graph):
                 sccs.append(scc) #add the DFS tree to the list of DFS trees called SCCs
 
     print("Check SCCs from find SCCs:", sccs)
-    print("Check stack from find SCCs:", stack)
     return sccs, stack
 
 
@@ -218,7 +222,7 @@ def find_solution(sccs):
     print("Find Solution is called")
     #go down the SCCs in reverse topological order
     solution = []
-    for i in range(len(sccs)-1, 0, -1):
+    for i in range(0, len(sccs)-1):
         scc = sccs[i]
         for literal in scc:
             key = int(literal.id)
@@ -258,7 +262,7 @@ def solver():
         for val in dictfinal[key]:
             graph.add_edge(key, val, weight=0)
     
-    print("Vertices in a graph:", graph.vertices)
+    # print("Vertices in a graph:", graph.vertices)
 
     print("Stage 4 \n")
     sccs = find_SCCs(graph)[0]
