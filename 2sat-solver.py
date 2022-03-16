@@ -172,10 +172,11 @@ def find_SCCs(implication_graph):
         node = stack.pop() #get the lowest topological order node to search for a SCC
         if node not in visited:
             scc = []
-            scc.append(node)
+            # scc.append(node)
             visit_node(t_g, visited, node, [], scc) #add all strongly connect nodes to the DFS-tree named SCC
             if len(scc) != 0:
                 sccs.append(scc) #add the DFS tree to the list of DFS trees called SCCs
+
     return sccs, stack
 
 def find_contradiction(sccs):
