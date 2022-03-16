@@ -191,7 +191,7 @@ def find_contradiction(sccs):
         print(scc)
         for literal in scc: #scc --> group of nodes
             for other_literal in scc[scc.index(literal):]:
-                if other_literal.id == literal.id:
+                if other_literal.id == -literal.id:
                     return True
     return False
 
@@ -200,9 +200,9 @@ def find_solution(sccs):
     solution = []
     for scc in sccs:
         for literal in scc:
-            if (abs(literal) not in solution) and (literal not in solution):
-                solution.append(literal)
-    return literal
+            if (abs(literal.id) not in solution) and (literal.id not in solution):
+                solution.append(literal.id)
+    return solution
 
 
 
