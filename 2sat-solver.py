@@ -127,15 +127,15 @@ def listToCnf(cnf):
 def DFS(graph, visited, stack):
     #visit every vertex in the graph
     for vert in graph.vertices.values():
-        if vert not in visited:
+        if visited[vert.id] == False:
             visit_vert(graph, visited, vert, stack)
 
 # DFS helper function that visits all the reachable vertices --> traverses a DFS tree
 def visit_vert(graph, visited, vert, stack):
-    if vert not in visited:
-        visited.append(vert)
+    if visited[vert.id] == False:
+        visited[vert.id] = True
         for neighbour in vert.get_neighbours():
-            if neighbour not in visited:
+            if visited[neighbour.id] == False:
                 visit_vert(graph, visited, neighbour, stack) #recursively go down the DFS tree.
         stack.append(vert)
 
@@ -154,7 +154,11 @@ def reverse_graph(graph):
 def find_SCCs(implication_graph):
     stack = [] # reverse topological order of the implication graph
     sccs = [] #nested list of SCCs
-    visited = []
+    visited = {}
+
+    for key in implication_graph.vertices.keys():
+        visited[key] = False
+    
     #get the topological order of the implication graph, stored in stack. top of stack --> last vertex to finish
     DFS(implication_graph, visited, stack)
 
@@ -164,13 +168,15 @@ def find_SCCs(implication_graph):
     #DFS iteration 2
     # retrieve the vertex from top of the stack, index = n-1, to visit in the reverse graph, 
     # each visit will generate a DFS-tree that corresponds to a Strongly connected component
-    visited = []
+    for key in visited.keys():
+        visited[key] = False
+
     while len(stack) != 0:
         #get the lowest topological order vert to search for a SCC
         vert_id = stack.pop().id # int object
         transposed_vert = transposed_graph.get_vertex(vert_id)
         # check if the vertice has not been visited before to avoid adding the same nodes into different SCCs
-        if transposed_vert not in visited:
+        if visited[transposed_vert.id] == False:
             scc = []
             # add all strongly connect vertices to the DFS-tree named scc
             visit_vert(transposed_graph, visited, transposed_vert, scc)
