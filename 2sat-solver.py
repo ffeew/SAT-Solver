@@ -121,29 +121,27 @@ def listToCnf(cnf):
     return dictOut
 
 # function used to find the topological order of the implication graph
-# modify the stack and scc lists passed in
-def DFS(implication_graph, visited, stack, scc):
+# modify the stack list passed in
+def DFS(graph, visited, stack):
     #visit every vertex in the graph
-    for vert in implication_graph.vertices.values():
+    for vert in graph.vertices.values():
         if vert not in visited:
-            visit_vert(implication_graph, visited, vert, stack, scc)
+            visit_vert(graph, visited, vert, stack)
 
 # DFS helper function that visits all the reachable vertices --> traverses a DFS tree
-def visit_vert(implication_graph, visited, vert, stack, scc):
+def visit_vert(graph, visited, vert, stack):
     if vert not in visited:
         visited.append(vert)
         for neighbour in vert.get_neighbours():
             if neighbour not in visited:
-                visit_vert(implication_graph, visited, neighbour, stack, scc) #recursively go down the DFS tree.
+                visit_vert(graph, visited, neighbour, stack) #recursively go down the DFS tree.
         stack.append(vert)
-        scc.append(vert)
-    return visited
 
 # reverse the directions of all the edges  
-def reverse_graph(implication_graph): 
+def reverse_graph(graph): 
     transposed_graph = Graph()
     # for each vert in graph
-    for key, vert in implication_graph.vertices.items():
+    for vert in graph.vertices.values():
         # for each neighbour vert of a single vert
         for neighbour in vert.get_neighbours():
             transposed_graph.add_edge(neighbour.id, vert.id)
@@ -152,11 +150,11 @@ def reverse_graph(implication_graph):
 # find the list of all SCCs by running DFS, to get the topological order, denoted by the reverse of stack,
 # then another DFS to obtain all SCCs
 def find_SCCs(implication_graph):
-    stack = [] # reverse topological order of the implication graph
+    stack = [] # topological order of the implication graph
     sccs = [] #nested list of SCCs
-
+    visited = []
     #get the topological order of the implication graph, stored in stack. top of stack --> last vertex to finish
-    DFS(implication_graph, [], stack, [])
+    DFS(implication_graph, visited, stack)
 
     #reverse the graph to get the SCCs denoted by the DFS trees
     transposed_graph = reverse_graph(implication_graph)
@@ -168,17 +166,16 @@ def find_SCCs(implication_graph):
     while len(stack) != 0:
         #get the lowest topological order vert to search for a SCC
         vert_id = stack.pop().id # int object
-        
+        transposed_vert = transposed_graph.get_vertex(vert_id)
         # check if the vertice has not been visited before to avoid adding the same nodes into different SCCs
-        if transposed_graph.get_vertex(vert_id) not in visited:
+        if transposed_vert not in visited:
             scc = []
             # add all strongly connect vertices to the DFS-tree named scc
-            visit_vert(transposed_graph, visited, transposed_graph.get_vertex(vert_id), [], scc)
+            visit_vert(transposed_graph, visited, transposed_vert, scc)
             # prevent an empty list from being appended into sccs
             if len(scc) != 0:
                 sccs.append(scc) #add the DFS tree to the list of DFS trees called SCCs
-    print("SCCs: ", sccs)
-    return sccs, stack
+    return sccs
 
 
 def find_contradiction(sccs):
@@ -216,13 +213,13 @@ def find_solution(sccs):
         else:
             result[ind] = "0"
     
-    return " ".join(result)
+    return "  ".join(result)
 
 def solver():
-    print("Checking if the following 2-SAT Problem is Satisfiable")
+    print("Checking if the following 2-SAT Problem is Satisfiable:")
 
     # input the file name or file path
-    file = input("Input the file name or file path: " )
+    file = input("Input the file name or file path:" )
     cnf = loadCnfFile(file)
     dictfinal = listToCnf(cnf)
 
@@ -233,26 +230,21 @@ def solver():
             graph.add_edge(key, val, weight=0)
     
     # generate the list of all Strongly connected components
-    sccs = find_SCCs(graph)[0]
+    sccs = find_SCCs(graph)
 
     # check for the presecence of any SCCs that contains both a literal i and its complement -i.
     # if such a SCC exists, 2SAT is unsatisfiable due to the contradiction
     if not find_contradiction(sccs):
-        print()
-        print("****************************************************************************************************")
-        print("SATISFIABLE")
+        print("\nSATISFIABLE\n")
         solution = find_solution(sccs)
-        for i, sol in enumerate(solution.split()):
-            print(str(i+1)+": ", sol)
-        print("****************************************************************************************************")
-        print()
+        # for i, sol in enumerate(solution.split()):
+        #     print(str(i+1)+":", sol, end=", ")
+        # print("\n")
+        print(solution)
         return solution
     else:
-        print()
-        print("****************************************************************************************************")
-        print("UNSATISFIABLE")
-        print("****************************************************************************************************")
-        print()
+        print("\nUNSATISFIABLE\n")
         return None
+
 
 solver()
