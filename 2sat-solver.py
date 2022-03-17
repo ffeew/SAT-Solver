@@ -222,6 +222,7 @@ def find_solution(sccs):
     # print("Find Solution is called")
     #go down the SCCs in reverse topological order
     solution = []
+
     for i in range(0, len(sccs)-1):
         scc = sccs[i]
         for literal in scc:
