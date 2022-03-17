@@ -1,3 +1,5 @@
+import time
+
 class Vertex:
     def __init__(self, id=""):
         self.id = id 
@@ -220,6 +222,7 @@ def solver():
 
     # input the file name or file path
     file = input("Input the file name or file path:" )
+    start = time.time()
     cnf = loadCnfFile(file)
     dictfinal = listToCnf(cnf)
 
@@ -238,10 +241,12 @@ def solver():
         print("\nSATISFIABLE\n")
         solution = find_solution(sccs)
         print(solution)
-        return solution
     else:
         print("\nUNSATISFIABLE\n")
-        return None
+    
+    end = time.time()
+    duration = (end - start)*1000
+    print("Running Time of Algorithm: {}ms".format(duration))
 
 
 solver()
