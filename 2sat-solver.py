@@ -150,7 +150,7 @@ def reverse_graph(graph):
 # find the list of all SCCs by running DFS, to get the topological order, denoted by the reverse of stack,
 # then another DFS to obtain all SCCs
 def find_SCCs(implication_graph):
-    stack = [] # topological order of the implication graph
+    stack = [] # reverse topological order of the implication graph
     sccs = [] #nested list of SCCs
     visited = []
     #get the topological order of the implication graph, stored in stack. top of stack --> last vertex to finish
@@ -231,15 +231,12 @@ def solver():
     
     # generate the list of all Strongly connected components
     sccs = find_SCCs(graph)
-
+    
     # check for the presecence of any SCCs that contains both a literal i and its complement -i.
     # if such a SCC exists, 2SAT is unsatisfiable due to the contradiction
     if not find_contradiction(sccs):
         print("\nSATISFIABLE\n")
         solution = find_solution(sccs)
-        # for i, sol in enumerate(solution.split()):
-        #     print(str(i+1)+":", sol, end=", ")
-        # print("\n")
         print(solution)
         return solution
     else:
