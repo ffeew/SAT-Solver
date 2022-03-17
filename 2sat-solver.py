@@ -242,8 +242,7 @@ def solver():
         print("****************************************************************************************************")
         print("SATISFIABLE")
         solution = find_solution(sccs)
-        for i, sol in enumerate(solution.split()):
-            print(str(i+1)+": ", sol)
+        print(solution)
         print("****************************************************************************************************")
         print()
         return solution
