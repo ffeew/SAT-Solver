@@ -1,4 +1,3 @@
-#%%
 class Vertex:
     def __init__(self, id=""):
         self.id = id 
@@ -140,7 +139,7 @@ def visit_vert(implication_graph, visited, vert, stack, scc):
         scc.append(vert)
     return visited
 
-#reverse the directions of all the edges  
+# reverse the directions of all the edges  
 def reverse_graph(implication_graph): 
     transposed_graph = Graph()
     # for each vert in graph
@@ -166,30 +165,24 @@ def find_SCCs(implication_graph):
     # retrieve the vertex from top of the stack, index = n-1, to visit in the reverse graph, 
     # each visit will generate a DFS-tree that corresponds to a Strongly connected component
     visited = []
-    stack.reverse()
     while len(stack) != 0:
         #get the lowest topological order vert to search for a SCC
-        vert = stack.pop()
+        vert_id = stack.pop().id # int object
         
         # check if the vertice has not been visited before to avoid adding the same nodes into different SCCs
-        if vert not in visited:
+        if transposed_graph.get_vertex(vert_id) not in visited:
             scc = []
             # add all strongly connect vertices to the DFS-tree named scc
-            visit_vert(transposed_graph, visited, vert, [], scc) 
+            visit_vert(transposed_graph, visited, transposed_graph.get_vertex(vert_id), [], scc)
             # prevent an empty list from being appended into sccs
             if len(scc) != 0:
                 sccs.append(scc) #add the DFS tree to the list of DFS trees called SCCs
-
+    print("SCCs: ", sccs)
     return sccs, stack
 
 
 def find_contradiction(sccs):
-    # print("Find Contradiction is called")
-    # print("SCCs:", sccs, "\n")
-
     for scc in sccs:
-        # print("SCC:",scc, "\n")
-
         for literal in scc: #scc --> group of vertices
             for other_literal in scc[scc.index(literal):]:
                 if other_literal.id == -1*literal.id:
@@ -202,7 +195,7 @@ def find_solution(sccs):
     solution = []
     
     # go down the list of all SCCs in reverse topological order
-    for i in range(0, len(sccs)-1):
+    for i in range(len(sccs)-1,0,-1):
         scc = sccs[i]
         for literal in scc:
             key = int(literal.id)
@@ -226,7 +219,7 @@ def find_solution(sccs):
     return " ".join(result)
 
 def solver():
-    print("Checking if the following 2-CNF is Satisfiable in linear time.")
+    print("Checking if the following 2-SAT Problem is Satisfiable")
 
     # input the file name or file path
     file = input("Input the file name or file path: " )
@@ -249,7 +242,8 @@ def solver():
         print("****************************************************************************************************")
         print("SATISFIABLE")
         solution = find_solution(sccs)
-        print(solution)
+        for i, sol in enumerate(solution.split()):
+            print(str(i+1)+": ", sol)
         print("****************************************************************************************************")
         print()
         return solution
